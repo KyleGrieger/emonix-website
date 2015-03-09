@@ -23,6 +23,7 @@
 
 <body id="page-top" data-spy="scroll" data-target=".navbar-custom">
 	<!-- Preloader -->
+
 	<div id="preloader">
 	  <div id="load"></div>
 	</div>
@@ -288,7 +289,7 @@
                         </div>
                     </div>
                     <div class="col-md-12">
-                        <button type="submit" class="btn btn-skin pull-right" id="btnContactUs">
+                        <button type="submit" class="btn btn-skin pull-right" id="btnContactUs" onclick="sendEmail()">
                             Send Message</button>
                     </div>
                 </div>
@@ -349,13 +350,44 @@
     <script src="js/lib/jquery.min.js"></script>
     <script src="js/lib/bootstrap.min.js"></script>
     <script src="js/lib/jquery.easing.min.js"></script>	
+    <script type="text/javascript" src="js/lib/mandrill.js"></script>
 	<script src="js/lib/jquery.scrollTo.js"></script>
 	<script src="js/lib/wow.min.js"></script>
     <!-- Custom Theme JavaScript -->
     <script src="js/lib/custom.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
     <script src="bower_components/angular/angular.min.js"></script>
+    <!-- TODO angularify this-->
+       <script type="text/javascript">
+var m = new mandrill.Mandrill('H_KxzqtwRLX4zO_L-odyJg');
 
 
+function sendEmail() {
+// create a variable for the API call parameters
+// Send the email!
+var from = document.getElementById("email").value;
+console.log(from);
+var subject = document.getElementById("subject").value;
+console.log(subject);
+var message = document.getElementById("message").value;
+console.log(message);
+
+var params = {
+    "message": {
+        "from_email": from,
+        "to":[{"email":"kyle.grieger@gmail.com"}],
+        "subject": subject,
+        "text": message
+    }
+};
+
+    m.messages.send(params, function(res) {
+    }, function(err) {
+        log(err);
+    });
+
+}
+    </script>
 </body>
 
 </html>
