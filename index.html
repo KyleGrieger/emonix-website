@@ -644,7 +644,6 @@ if (window.addEventListener) {
     <script src="js/lib/jquery.min.js"></script>
     <script src="js/lib/bootstrap.min.js"></script>
     <script src="js/lib/jquery.easing.min.js"></script>	
-    <script type="text/javascript" src="js/lib/mandrill.js"></script>
 	<script src="js/lib/jquery.scrollTo.js"></script>
 	<script src="js/lib/wow.min.js"></script>
     <!-- Custom Theme JavaScript -->
@@ -653,34 +652,30 @@ if (window.addEventListener) {
     <script src="bower_components/angular/angular.min.js"></script>
     <!-- TODO angularify this-->
        <script type="text/javascript">
-var m = new mandrill.Mandrill('H_KxzqtwRLX4zO_L-odyJg');
 
 
-function sendEmail() {
+function sendEmail(){
 // create a variable for the API call parameters
 // Send the email!
 var from = document.getElementById("email").value;
 console.log(from);
+var name = document.getElementById("name").value;
+console.log(name);
 var subject = document.getElementById("subject").value;
 console.log(subject);
 var message = document.getElementById("message").value;
 console.log(message);
 
-var params = {
-    "message": {
-        "from_email": from,
-        "to":[{"email":"neil.klingensmith@gmail.com"}],
-        "subject": subject,
-        "text": message
-    }
-};
 
-    m.messages.send(params, function(res) {
-    }, function(err) {
-        console.log(err);
-    });
 
+   var xmlHttp = null;
+
+    xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", 'http://127.0.0.1:8000/email/'+message+ '/from/'+ from +'/name/' + name +'/sub/'+subject, false );
+    xmlHttp.send( null );
+    console.log(xmlHttp.responseText)
 }
+
     </script>
 </body>
 
