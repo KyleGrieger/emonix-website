@@ -7,7 +7,11 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Emonix Home Automaiton</title>
+    <title>Emonix Home Automation</title>
+
+<link href='http://fonts.googleapis.com/css?family=Buenard:700' rel='stylesheet' type='text/css'>
+
+
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
@@ -19,7 +23,124 @@
     <link href="css/style.css" rel="stylesheet">
 	<link href="color/default.css" rel="stylesheet">
 
+    <script src="https://apis.google.com/js/client:platform.js" async defer></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+<!-- Warming Up -->
+<link href='http://fonts.googleapis.com/css?family=Buenard:700' rel='stylesheet' type='text/css'>
+<script src="http://pupunzi.com/mb.components/mb.YTPlayer/demo/inc/jquery.mb.YTPlayer.js"></script>
+
+<script src="http://pupunzi.com/mb.components/mb.YTPlayer/demo/inc/jquery.mb.YTPlayer.js"></script>
+
+<script>
+function computeBill()
+{
+var xmlhttp;
+if (window.XMLHttpRequest)
+  {// code for IE7+, Firefox, Chrome, Opera, Safari
+  xmlhttp=new XMLHttpRequest();
+  }
+else
+  {// code for IE6, IE5
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+xmlhttp.onreadystatechange=function()
+  {
+  if (xmlhttp.readyState==4 && xmlhttp.status==200)
+    {
+    document.getElementById("computedGasBill").value=xmlhttp.responseText;
+
+    }
+  }
+var gasused = document.getElementById('gasused').value;
+var gasprice = document.getElementById('gasprice').value;
+var startdate = document.getElementById('startdate').value;
+var enddate = document.getElementById('enddate').value;
+var dc = document.getElementById('distrocharge').value;
+xmlhttp.open("GET","computebill.php?gasused="+gasused+"&gasprice="+gasprice+"&startdate="+startdate+"&enddate="+enddate+"&distrocharge="+dc,true);
+xmlhttp.send();
+}
+
+function linkNESTDevice() {
+	var user_nest_authCode = document.forms['user_nest_authCode_form']['user_nest_authCode'].value;
+
+	if(user_nest_authCode.length != 8) {
+		alert('Authorization Code must have 8 characters');
+		return false;
+	}
+
+	localStorage.setItem('user_nest_authCode', user_nest_authCode);
+
+	var glogin_authResult = localStorage.getItem('glogin_authResult');
+	var glogin_authResult = JSON.parse(glogin_authResult);
+
+	sendNESTDataToEmonixIO(glogin_authResult);
+
+	return true;
+}
+
+function sendNESTDataToEmonixIO(authResult) {
+	gapi.client.load("oauth2", "v2", function(){
+      	gapi.client.oauth2.tokeninfo( {'access_token' : authResult.access_token} ).execute( function(innerResp){
+			var user_email = innerResp.email;
+			var user_nest_authCode = localStorage.getItem('user_nest_authCode');
+
+			var user_nest_dataBundle = {
+				"email": user_email,
+				"user_nest_authCode": user_nest_authCode
+			};
+
+			user_nest_dataBundle = JSON.stringify(user_nest_dataBundle);
+
+			var xmlhttp;
+			if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
+			  	xmlhttp=new XMLHttpRequest();
+			} else { // code for IE6, IE5
+			  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+			}
+			xmlhttp.onreadystatechange=function() {
+				if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+					var serverResponse = xmlhttp.responseText;
+					alert(serverResponse);
+			    } else if(xmlhttp.status==400) {
+					alert('Uh Oh! Something went awry. Could you please enter your authorization code again? Pretty please?');
+				}
+			}
+			xmlhttp.open("POST","addNestUserToDatabase.php",true);
+			xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xmlhttp.send("user_nest_dataBundle="+user_nest_dataBundle);
+		});
+      });
+
+      return true;
+}
+
+function checkUserLoginStatus() {
+	var glogin_authResult = localStorage.getItem('glogin_authResult');
+	glogin_authResult = JSON.parse(glogin_authResult);
+
+	if ( (glogin_authResult != null) && glogin_authResult['status']['signed_in'] ) {
+		localStorage.setItem('signOutRequest','1');
+		document.getElementById('login_link').innerHTML = "<a href=\"/login.html\">Logout</a>";
+	} else {
+		document.getElementById('login_link').innerHTML = "<a href=\"/login.html\">Login</a>";
+	}
+}
+
+
+if (window.addEventListener) {
+    window.addEventListener("load", checkUserLoginStatus, false);
+} else if (window.attachEvent) {
+    window.attachEvent("onload", checkUserLoginStatus);
+} else {
+	window.onload = checkUserLoginStatus;
+}
+
+
+</script>
 </head>
+
 
 <body id="page-top" data-spy="scroll" data-target=".navbar-custom">
 	<!-- Preloader -->
@@ -43,9 +164,11 @@
             <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
       <ul class="nav navbar-nav">
         <li class="active"><a href="#intro">Home</a></li>
-        <li><a href="#about">About</a></li>
+        <li><a href="#app">App</a></li>
+	<li><a href="#about">About us</a></li>
 		<li><a href="#service">Service</a></li>
 		<li><a href="#contact">Contact</a></li>
+		<li id="login_link"><a href="/login.html">Login</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Partners <b class="caret"></b></a>
           <ul class="dropdown-menu">
@@ -62,19 +185,187 @@
     </nav>
 
 	<!-- Section: intro -->
-    <section id="intro" class="intro">
-	
-		<div class="slogan">
-			<h2> <span class="text_color">HOME AUTOMATION</span> </h2>
-			<h4>UW MADISON STUDENTS RESEARCHING AND DEVELOPING HOME AUTOMATION DEVICES</h4>
+<div class="video-banner" style="z-index:3">
+<!--<video id="video" preload autoplay="true" loop="loop" muted="muted" volume="0"> -->
+<video autoplay loop poster="img/emonix.jpeg" id="bgvid">
+<source src="http://emonix.io/img/vent.mp4" type="video/mp4"></source>
+</video>
+     </div>
+
+<section id="intro" class="intro">
+		<div class="slogan" style="z-index:120">
+			<h2> <span class="text_color">WE BELIEVE</span> </h2>
+			<h4>that every space in your home should be comfortable and energy efficient.</h4>
+			<h4>We designed the Emonix App to make that happen</h4>
+
+			<h3>UPDATE:</h3>
+			<h4>We're looking for beta testers to try out our new smart vent technology in their homes. If you're interested, please <a href="#contact">get in touch</a>.</h4>
 		</div>
+
 		<div class="page-scroll">
 			<a href="#service" class="btn btn-circle">
 				<i class="fa fa-angle-double-down animated"></i>
 			</a>
-		</div>
+	</div>
     </section>
 	<!-- /Section: intro -->
+
+<!-- Video test -->
+
+<!-- Warming Up -->
+<!--Video Section-->
+<!--
+<section class="content-section video-section">
+  <div class="pattern-overlay">
+  <a id="bgndVideo" class="player" data-property="{videoURL:'https://www.youtube.com/watch?v=fdJc1_IBKJA',containment:'.video-section', quality:'large', autoPlay:true, mute:true, opacity:1}">bg</a>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+        <h1>Full Width Video</h1>  
+        <h3>Enjoy Adding Full Screen Videos to your Page Sections</h3>
+	   </div>
+      </div>
+    </div>
+  </div>
+</section>
+-->
+<!-- End Video Test -->
+
+	<!-- Section: app -->
+    <section id="app" class="home-section text-center">
+		<div class="heading-about">
+			<div class="container">
+			<div class="row">
+				<div class="col-lg-8 col-lg-offset-2">
+					<div class="wow bounceInDown" data-wow-delay="0.4s">
+					<div class="section-heading">
+					<h2>Emonix App</h2>
+					<i class="fa fa-2x fa-angle-down"></i>
+
+					</div>
+					</div>
+				</div>
+			</div>
+			</div>
+		</div>
+		<div id="appcontainer" class="container">
+
+<h4>please tell us about your last heating bill</h4>
+<!-- Begin Form to Connect To Nest-->
+<a href="https://home.nest.com/login/oauth2?client_id=5b67590a-8ce8-43f2-bad1-f35e8c6ba3cb&state=STATE" target="_blank">Generate Authorization Code for My NEST</a> <br />
+
+<form name="user_nest_authCode_form" action="javascript:linkNESTDevice();" method="post" class="form-horizontal" role="form">
+<strong></strong>
+<!-- <input type="text" name="user_nest_authCode" required /> <br /> -->
+<div class="form-group">
+    <label for="nest_authCode_request" class="col-sm-4 control-label">Please Enter your NEST Authorization Code Here</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="user_nest_authCode" placeholder="NEST Authorization Code">
+    </div>
+  </div>
+
+<input type="submit" value="I authorize Emonix.io to reduce my Energy Bill" /> <br />
+</form>
+<br />
+<!-- End Form to Connect To Nest-->
+
+<!-- Begin Horiz Form -->
+
+<form id="billform" class="form-horizontal" role="form">
+<!-- Start Date -->
+<div class="form-group">
+    <label for="startdate" class="col-sm-4 control-label">billing cycle start date</label>
+    <div class="col-sm-4">
+      <input type="date" class="form-control" id="startdate" placeholder="start date">
+    </div>
+  </div>
+
+<!-- End Date -->
+<div class="form-group">
+    <label for="enddate" class="col-sm-4 control-label">billing cycle end date</label>
+    <div class="col-sm-4">
+      <input type="date" class="form-control" id="enddate" placeholder="end date">
+    </div>
+  </div>
+
+<!-- Gas Amount -->
+     <div class="form-group">
+           <div class="col-sm-4 text-right">
+             <label for="gasused" class="">gas used last month</label>
+           </div>
+           <div class="col-sm-2">
+             <input id="gasused" class="form-control input-group-lg reg_name" type="text" name="gas used" placeholder="gas used" onkeyup="computeBill()">
+           </div>       
+           <div class="col-sm-2">
+             <label for="lastname" class="sr-only"></label>
+      <select class="form-control input-group-lg reg_name">
+        <option>therms</option>
+        <option>btu</option>
+      </select>
+           </div>
+    </div><!--/form-group-->
+
+<!-- Gas Price -->
+<div class="form-group">
+    <label for="gasprice" class="col-sm-4 control-label">gas price (per therm/btu)</label>
+    <div class="col-sm-4">
+      <div class="input-group">
+      <div class="input-group-addon">$</div>
+      <input type="text" class="form-control" id="gasprice" placeholder="gas price" onkeyup="computeBill()">
+      </div>
+    </div>
+  </div>
+
+<!-- Distribution Charges -->
+     <div class="form-group">
+           <div class="col-sm-4 text-right">
+             <label for="distrocharge" class="">distribution charges</label>
+           </div>
+           <div class="col-sm-2">
+           <div class="input-group">
+           <div class="input-group-addon">$</div>
+             <input id="distrocharge" class="form-control input-group-lg reg_name" type="text" placeholder="daily charge" onkeyup="computeBill()">
+           </div>
+           </div>       
+           <div class="col-sm-2">
+             <label for="lastname" class="sr-only"></label>
+      <select class="form-control input-group-lg reg_name">
+        <option>per day</option>
+        <option>per month</option>
+      </select>
+           </div>
+    </div><!--/form-group-->
+
+<div class="form-group">
+    <label for="computedGasBill" class="col-sm-4 control-label">total heating bill</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="computedGasBill" placeholder="end date">
+    </div>
+  </div>
+
+
+
+  <div class="form-group"> 
+    <div class="col-sm-offset-2 col-sm-8">
+      <button type="submit" class="btn btn-default">Go!</button>
+    </div>
+  </div>
+</form>
+
+<!-- End Form -->
+
+		<div class="row">
+			<div class="col-lg-2 col-lg-offset-5">
+				<hr class="marginbot-50">
+			</div>
+		</div>
+
+
+		</div>
+	</section>
+	<!-- /Section: about -->
+	
+
 
 	<!-- Section: about -->
     <section id="about" class="home-section text-center">
@@ -151,6 +442,9 @@
 					<div class="wow bounceInDown" data-wow-delay="0.4s">
 					<div class="section-heading">
 					<h2>FEATURES AND SERVICES</h2>
+					<h4>Emonix is a home automation service that reduces the energy consumed by your home's heating and cooling systems.
+					It works by only conditioning the spaces that are actively being used.</h4>
+					<h5>Using smart vent dampers, airflow to unused spaces is rerouted to other areas of the home so you don't waste energy and money to heat and cool your unused rooms.</h5>
 					<i class="fa fa-2x fa-angle-down"></i>
 
 					</div>
@@ -253,7 +547,7 @@
     <div class="row">
         <div class="col-lg-8">
             <div class="boxed-grey">
-                <form id="contact-form">
+                <form id="contact-form" action="">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -375,7 +669,7 @@ console.log(message);
 var params = {
     "message": {
         "from_email": from,
-        "to":[{"email":"kyle.grieger@gmail.com"}],
+        "to":[{"email":"neil.klingensmith@gmail.com"}],
         "subject": subject,
         "text": message
     }

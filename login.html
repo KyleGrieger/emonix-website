@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Emonix Home Automaiton</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="/login_creds/bower_components/bootstrap-social/bootstrap-social.css" rel="stylesheet" type="text/css">
+    <!-- Fonts -->
+    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+	<link href="css/animate.css" rel="stylesheet" />
+    <!-- Squad theme CSS -->
+    <link href="css/style.css" rel="stylesheet">
+	<link href="color/default.css" rel="stylesheet">
+    <script src="https://apis.google.com/js/client:platform.js" async defer></script>
+
+	<script type="text/javascript">
+
+	function checkForSignOutRequest() {
+		var signOutRequest = localStorage.getItem('signOutRequest');
+	
+		if (signOutRequest != null) {
+			if (signOutRequest == '1') {
+	  			localStorage.removeItem('signOutRequest');
+				gapi.auth.signOut();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+//	if (window.addEventListener) {
+//		window.addEventListener("load", checkForSignOutRequest, false);
+//	} else if (window.attachEvent) {
+//		window.attachEvent("onload", checkForSignOutRequest);
+//	} else {
+//		window.onload = checkForSignOutRequest;
+//	}
+
+	</script>
+
+</head>
+
+<body id="page-top" data-spy="scroll" data-target=".navbar-custom">
+	<!-- Preloader -->
+
+	<div id="preloader">
+	  <div id="load"></div>
+	</div>
+
+    <nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="index.html">
+                    <h1>EMONIX</h1>
+                </a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="index.html">Home</a></li>
+      </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+    
+	<!-- Section: intro -->
+	<!-- /Section: intro -->
+
+
+	<!-- Section: app -->
+
+
+	<!-- Section: about -->
+	<!-- /Section: about -->
+	
+
+	<!-- Section: services -->
+	<!-- /Section: services -->
+	
+
+	
+
+	<!-- Section: contact -->
+        	<!-- Section: contact -->
+    <section id="contact" class="home-section text-center">
+		<div class="heading-contact">
+			<div class="container">
+			<div class="row">
+				<div class="col-lg-8 col-lg-offset-2">
+					<div class="wow bounceInDown" data-wow-delay="0.4s">
+					<div class="section-heading">
+					<h2>Sign UP using Google Account</h2>
+					<i class="fa fa-2x fa-angle-down"></i>
+
+					</div>
+					</div>
+				</div>
+			</div>
+			</div>
+		</div>
+		<div class="container">
+
+		<div class="row">
+			<div class="col-lg-2 col-lg-offset-5">
+				<hr class="marginbot-50">
+			</div>
+		</div>
+    <div class="row">
+		<div class="col-lg-4"></div>
+		<div class="col-lg-4">
+		                 <span id="signinButton">
+				   <a href="www.emonix.com"><span
+				    class="g-signin"
+				    data-callback="signinCallback"
+				    data-clientid="199078953054-rvvud306v4b9ihn48aclqsiajm2pd8o7.apps.googleusercontent.com"
+				    data-cookiepolicy="single_host_origin"
+				    data-requestvisibleactions="http://schema.org/AddAction"
+				    data-scope="https://www.googleapis.com/auth/plus.login"
+				    data-width="wide"
+				    data-height="tall">
+				    </span></a>
+			         </span>
+
+			
+		</div>
+        </div>
+		</div>
+	</section>
+	<!-- /Section: contact -->
+
+	<!-- /Section: contact -->
+
+	<footer>
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12 col-lg-12">
+					<p>&copy;Copyright 2015 - Emonix.</p>
+				</div>
+			</div>	
+		</div>
+	</footer>
+
+    <!-- Core JavaScript Files -->
+    <script src="js/lib/jquery.min.js"></script>
+    <script src="js/lib/bootstrap.min.js"></script>
+    <script src="js/lib/jquery.easing.min.js"></script>	
+    <script type="text/javascript" src="js/lib/mandrill.js"></script>
+	<script src="js/lib/jquery.scrollTo.js"></script>
+	<script src="js/lib/wow.min.js"></script>
+    <!-- Custom Theme JavaScript -->
+    <script src="js/lib/custom.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <!-- TODO angularify this-->
+
+
+       <script type="text/javascript">
+var m = new mandrill.Mandrill('H_KxzqtwRLX4zO_L-odyJg');
+
+function sendEmail() {
+// create a variable for the API call parameters
+// Send the email!
+var from = document.getElementById("email").value;
+console.log(from);
+var subject = document.getElementById("subject").value;
+console.log(subject);
+var message = document.getElementById("message").value;
+console.log(message);
+
+var params = {
+    "message": {
+        "from_email": from,
+        "to":[{"email":"kyle.grieger@gmail.com"}],
+        "subject": subject,
+        "text": message
+    }
+};
+
+    m.messages.send(params, function(res) {
+    }, function(err) {
+        console.log(err);
+    });
+
+}
+</script>
+
+<script>
+function signinCallback(authResult) {
+
+  var authResult2 = { 'access_token' : authResult['access_token'] , 'status' : authResult['status'] };
+  localStorage.setItem('glogin_authResult', JSON.stringify(authResult2) );
+
+  if ( authResult == null ) {
+  	return;
+  }
+  
+  console.log(authResult);
+  // the following line fixes some weird authentication error - Uncaught Security Error .... protocols must match
+  if (authResult['g-oauth-window']) {
+  	delete authResult['g-oauth-window'];
+  }
+
+  if ( checkForSignOutRequest() == true ) {
+  	return;
+  }
+
+  if (authResult['status']['signed_in']) {
+      // Update the app to reflect a signed in user
+      // Hide the sign-in button now that the user is authorized, for example:
+      document.getElementById('signinButton').style.visibility = 'hidden';
+	  getUserEmailAddress(authResult);
+      window.location.assign("http://www.emonix.io");
+  } else {
+    // Update the app to reflect a signed out user
+    // Possible error values:
+    //   "user_signed_out" - User is signed-out
+    //   "access_denied" - User denied access to your app
+    //   "immediate_failed" - Could not automatically log in the user
+
+	document.getElementById('signinButton').style.visibility = 'visible';
+    console.log('Sign-in state: ' + authResult['error']);
+  }
+}
+
+function getUserEmailAddress(authResult) {
+	gapi.client.load("oauth2", "v2", function(){
+      	gapi.client.oauth2.tokeninfo( {'access_token' : authResult.access_token} ).execute( function(innerResp){
+//			console.log(innerResp.email);
+			localStorage.setItem('emailid',JSON.stringify(innerResp.email));
+		});
+      });
+}
+</script>
+</body>
+
+</html>

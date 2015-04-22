@@ -72,6 +72,12 @@ a:focus {
   line-height: 1em;
 }
 
+.video-banner{
+  width: 100%;
+  position: absolute;
+  top: 0px;
+}
+
 .navbar-brand h1{
 	color: #fff;
   font-size: 20px;
@@ -300,11 +306,18 @@ hr {
 /* ===========================
 --- Intro
 ============================ */
+video#bgvid {
+    position: relative; right: 0; bottom: 0;
+    min-width: 100%;
+    min-height: 200px;
+    max-width:100%;
+  }
 
 .intro {
-	width:100%;
-	position:relative;
-	background: url(../img/emonix.jpeg) no-repeat top center;
+    position:relative;
+    z-index:120;
+/*	position:relative;
+	background: url(../img/emonix.jpeg) no-repeat top center; */
 }
 
 #intro.intro {
@@ -341,7 +354,7 @@ hr {
 	border-width: 0px;
 	border-color: #000;
 	border-style: none;
-	text-shadow: -1px 0 1px #000;
+	text-shadow: -2px 0 2px #000;
 }
 
 .intro .slogan h4 {
@@ -789,3 +802,40 @@ Parallax
 	}
 	
 }
+
+
+
+
+
+/* Video test... */
+
+.video-section .pattern-overlay {
+background-color: rgba(71, 71, 71, 0.59);
+padding: 110px 0 32px;
+min-height: 496px; 
+/* Incase of overlay problems just increase the min-height*/
+}
+.video-section h1, .video-section h3{
+text-align:center;
+color:#fff;
+}
+.video-section h1{
+font-size:110px;
+font-family: 'Buenard', serif;
+font-weight:bold;
+text-transform: uppercase;
+margin: 40px auto 0px;
+text-shadow: 1px 1px 1px #000;
+-webkit-text-shadow: 1px 1px 1px #000;
+-moz-text-shadow: 1px 1px 1px #000;
+}
+.video-section h3{
+font-size: 25px;
+font-weight:lighter;
+margin: 0px auto 15px;
+}
+.video-section .buttonBar{display:none;}
+.player {font-size: 1px;}
+
+
+
