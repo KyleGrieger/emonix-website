@@ -357,6 +357,10 @@ video#bgvid {
 	text-shadow: -2px 0 2px #000;
 }
 
+.intro .slogan h3 {
+	color: #fff;
+	text-shadow: -1px 1px 1px #000;
+}
 .intro .slogan h4 {
 	color: #fff;
 	text-shadow: -1px 1px 1px #000;
