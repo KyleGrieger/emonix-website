@@ -9,9 +9,7 @@
 
     <title>Emonix Home Automation</title>
 
-<link href='http://fonts.googleapis.com/css?family=Buenard:700' rel='stylesheet' type='text/css'>
-
-
+	<link href='http://fonts.googleapis.com/css?family=Buenard:700' rel='stylesheet' type='text/css'>
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
@@ -25,125 +23,200 @@
 
     <script src="https://apis.google.com/js/client:platform.js" async defer></script>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
-<!-- Warming Up -->
-<link href='http://fonts.googleapis.com/css?family=Buenard:700' rel='stylesheet' type='text/css'>
-<script src="http://pupunzi.com/mb.components/mb.YTPlayer/demo/inc/jquery.mb.YTPlayer.js"></script>
+	<!-- Warming Up -->
+	<link href='http://fonts.googleapis.com/css?family=Buenard:700' rel='stylesheet' type='text/css'>
+	<script src="http://pupunzi.com/mb.components/mb.YTPlayer/demo/inc/jquery.mb.YTPlayer.js"></script>
+	
+	<script src="http://pupunzi.com/mb.components/mb.YTPlayer/demo/inc/jquery.mb.YTPlayer.js"></script>
 
-<script src="http://pupunzi.com/mb.components/mb.YTPlayer/demo/inc/jquery.mb.YTPlayer.js"></script>
+	<script>
+	function computeBill() {
+		var xmlhttp;
+		if (window.XMLHttpRequest) {
+			// code for IE7+, Firefox, Chrome, Opera, Safari
+			xmlhttp=new XMLHttpRequest();
+		} else {
+			// code for IE6, IE5
+			xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		xmlhttp.onreadystatechange=function() {
+			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+				document.getElementById("computedGasBill").value=xmlhttp.responseText;
+			}
+		}
+		var gasused = document.getElementById('gasused').value;
+		var gasprice = document.getElementById('gasprice').value;
+		var startdate = document.getElementById('startdate').value;
+		var enddate = document.getElementById('enddate').value;
+		var dc = document.getElementById('distrocharge').value;
+		xmlhttp.open("GET","computebill.php?gasused="+gasused+"&gasprice="+gasprice+"&startdate="+startdate+"&enddate="+enddate+"&distrocharge="+dc,true);
+		xmlhttp.send();
+	}
+	
+	function linkNESTDevice() {
+		var user_nest_authCode = document.forms['user_nest_authCode_form']['user_nest_authCode'].value;
+	
+		if(user_nest_authCode.length != 8) {
+			alert('Authorization Code must have 8 characters');
+			return false;
+		}
+	
+		localStorage.setItem('user_nest_authCode', user_nest_authCode);
+	
+		var glogin_authResult = localStorage.getItem('glogin_authResult');
+		var glogin_authResult = JSON.parse(glogin_authResult);
+	
+		sendNESTDataToEmonixIO(glogin_authResult);
+	
+		return true;
+	}
 
-<script>
-function computeBill()
-{
-var xmlhttp;
-if (window.XMLHttpRequest)
-  {// code for IE7+, Firefox, Chrome, Opera, Safari
-  xmlhttp=new XMLHttpRequest();
-  }
-else
-  {// code for IE6, IE5
-  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-  }
-xmlhttp.onreadystatechange=function()
-  {
-  if (xmlhttp.readyState==4 && xmlhttp.status==200)
-    {
-    document.getElementById("computedGasBill").value=xmlhttp.responseText;
+	function sendNESTDataToEmonixIO(authResult) {
+		gapi.client.load("oauth2", "v2", function(){
+	      	gapi.client.oauth2.tokeninfo( {'access_token' : authResult.access_token} ).execute( function(innerResp){
+				var user_email = innerResp.email;
+				var user_nest_authCode = localStorage.getItem('user_nest_authCode');
+	
+				var user_nest_dataBundle = {
+					"email": user_email,
+					"user_nest_authCode": user_nest_authCode
+				};
 
-    }
-  }
-var gasused = document.getElementById('gasused').value;
-var gasprice = document.getElementById('gasprice').value;
-var startdate = document.getElementById('startdate').value;
-var enddate = document.getElementById('enddate').value;
-var dc = document.getElementById('distrocharge').value;
-xmlhttp.open("GET","computebill.php?gasused="+gasused+"&gasprice="+gasprice+"&startdate="+startdate+"&enddate="+enddate+"&distrocharge="+dc,true);
-xmlhttp.send();
-}
-
-function linkNESTDevice() {
-	var user_nest_authCode = document.forms['user_nest_authCode_form']['user_nest_authCode'].value;
-
-	if(user_nest_authCode.length != 8) {
-		alert('Authorization Code must have 8 characters');
+				user_nest_dataBundle = JSON.stringify(user_nest_dataBundle);
+	
+				var xmlhttp;
+				if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
+				  	xmlhttp=new XMLHttpRequest();
+				} else { // code for IE6, IE5
+				  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+				}
+				xmlhttp.onreadystatechange=function() {
+					if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+						var serverResponse = xmlhttp.responseText;
+						alert(serverResponse);
+						location.reload(true);
+				    } else if(xmlhttp.status==400) {
+						alert('Uh Oh! Something went awry. Could you please enter your authorization code again? Pretty please?');
+					}
+				}
+				xmlhttp.open("POST","addNestUserToDatabase.php",true);
+				xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				xmlhttp.send("user_nest_dataBundle="+user_nest_dataBundle);
+			});
+	      });
+	
+	      return true;
+	}
+	
+	function checkUserLoginStatus() {
+		var glogin_authResult = localStorage.getItem('glogin_authResult');
+		
+		if (glogin_authResult != null) {
+			glogin_authResult = JSON.parse(glogin_authResult);
+			if ( glogin_authResult['status']['signed_in'] ) {
+				localStorage.setItem('signOutRequest','1');
+				document.getElementById('login_link').innerHTML = "<a href=\"/login.html\">Logout</a>";
+				return true;
+			} else {
+				document.getElementById('login_link').innerHTML = "<a href=\"/login.html\">Login</a>";
+			}
+		}
 		return false;
 	}
 
-	localStorage.setItem('user_nest_authCode', user_nest_authCode);
+	function checkNestRegistration() {
+		var authResult = localStorage.getItem('glogin_authResult');
 
-	var glogin_authResult = localStorage.getItem('glogin_authResult');
-	console.log(glogin_authResult);
-	var glogin_authResult = JSON.parse(glogin_authResult);
-
-	sendNESTDataToEmonixIO(glogin_authResult);
-
-	return true;
-}
-
-function sendNESTDataToEmonixIO(authResult) {
-	gapi.client.load("oauth2", "v2", function(){
-      	gapi.client.oauth2.tokeninfo( {'access_token' : authResult.access_token} ).execute( function(innerResp){
-			var user_email = innerResp.email;
-			var user_nest_authCode = localStorage.getItem('user_nest_authCode');
-
-			var user_nest_dataBundle = {
-				"email": user_email,
-				"user_nest_authCode": user_nest_authCode
-			};
-
-			user_nest_dataBundle = JSON.stringify(user_nest_dataBundle);
-
-			var xmlhttp;
-			if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
-			  	xmlhttp=new XMLHttpRequest();
-			} else { // code for IE6, IE5
-			  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-			}
-			xmlhttp.onreadystatechange=function() {
-				if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-					var serverResponse = xmlhttp.responseText;
-					alert(serverResponse);
-			    } else if(xmlhttp.status==400) {
-					alert('Uh Oh! Something went awry. Could you please enter your authorization code again? Pretty please?');
-				}
-			}
-			xmlhttp.open("POST","addNestUserToDatabase.php",true);
-			xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-			xmlhttp.send("user_nest_dataBundle="+user_nest_dataBundle);
-		});
-      });
-
-      return true;
-}
-
-function checkUserLoginStatus() {
-	var glogin_authResult = localStorage.getItem('glogin_authResult');
-	glogin_authResult = JSON.parse(glogin_authResult);
-
-	if ( (glogin_authResult != null) && glogin_authResult['status']['signed_in'] ) {
-		localStorage.setItem('signOutRequest','1');
-		document.getElementById('login_link').innerHTML = "<a href=\"/login.html\">Logout</a>";
-	} else {
-		document.getElementById('login_link').innerHTML = "<a href=\"/login.html\">Login</a>";
+		if (authResult != null) {
+		    authResult = JSON.parse(authResult);
+			gapi.client.load("oauth2", "v2", function(){
+	    	  	gapi.client.oauth2.tokeninfo( {'access_token' : authResult.access_token} ).execute( function(innerResp){
+					var user_email = innerResp.email;
+	
+					var xmlhttp;
+					if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
+					  	xmlhttp=new XMLHttpRequest();
+					} else { // code for IE6, IE5
+					  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+					}
+					xmlhttp.onreadystatechange=function() {
+						if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+							var serverResponse = xmlhttp.responseText;
+							if (serverResponse == 'true') {
+								document.getElementById('request_login_section').style.display='none';
+								document.getElementById('nest_linking_section').style.display='none';
+								document.getElementById('bill_analysis_section').style.display='block';
+							}
+					    }
+					}
+					xmlhttp.open("POST","checkNestRegistration.php",true);
+					xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+					xmlhttp.send("user_email="+user_email);
+				});
+	   		});
+		}
+	    return false;
 	}
-}
+	
+	
+	function operationsOnLoad() {
+		var userLoginStatus = checkUserLoginStatus();
+	
+		if (userLoginStatus == true) {
+			document.getElementById('request_login_section').style.display='none';
+			document.getElementById('nest_linking_section').style.display='block';
 
+			var nestRegistrationStatus = checkNestRegistration();
+			if (nestRegistrationStatus == true) {
+				document.getElementById('bill_analysis_section').style.display='block';
+			} else {
+				document.getElementById('bill_analysis_section').style.display='none';
+			}
+		} else {
+			document.getElementById('request_login_section').style.display='block';
+			document.getElementById('nest_linking_section').style.display='none';
+			document.getElementById('bill_analysis_section').style.display='none';
+		}
+	}
+	
+	
+	if (window.addEventListener) {
+	    window.addEventListener("load", operationsOnLoad, false);
+	} else if (window.attachEvent) {
+	    window.attachEvent("onload", operationsOnLoad);
+	} else {
+		window.onload = operationsOnLoad;
+	}
+	
+	</script>
+<!-- Google Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-if (window.addEventListener) {
-    window.addEventListener("load", checkUserLoginStatus, false);
-} else if (window.attachEvent) {
-    window.attachEvent("onload", checkUserLoginStatus);
-} else {
-	window.onload = checkUserLoginStatus;
-}
-
+  ga('create', 'UA-62214230-1', 'auto');
+  ga('send', 'pageview');
 
 </script>
+<!-- End Google Analytics -->
+
 </head>
 
 
 <body id="page-top" data-spy="scroll" data-target=".navbar-custom">
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.3";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
 	<!-- Preloader -->
 
 	<div id="preloader">
@@ -195,12 +268,12 @@ if (window.addEventListener) {
 
 <section id="intro" class="intro">
 		<div class="slogan" style="z-index:120">
-			<h2> <span class="text_color">WE BELIEVE</span> </h2>
+			<h2>WE BELIEVE</h2>
 			<h4>that every space in your home should be comfortable and energy efficient.</h4>
 			<h4>We designed the Emonix App to make that happen</h4>
 
 			<h3>UPDATE:</h3>
-			<h4>We're looking for beta testers to try out our new smart vent technology in their homes. If you're interested, please <a href="#contact">get in touch</a>.</h4>
+			<h4>We're looking for beta testers to try out our new smart vent technology in their homes. If you're interested, please <a href="#contact">get in touch</a>. Also, if you have time, please <a href="https://uwmadison.qualtrics.com/SE/?SID=SV_ekRYTcRsui7rpJP"> take our survey</a>.</h4>
 		</div>
 
 		<div class="page-scroll">
@@ -251,109 +324,124 @@ if (window.addEventListener) {
 		</div>
 		<div id="appcontainer" class="container">
 
-<h4>please tell us about your last heating bill</h4>
+
+<!--Request to log in-->
+<div id="request_login_section">
+<h1 font-size='xx-large'>Please <a href="/login.html">login</a>. Don't worry, it won't hurt.</h1>
+</div>
+<!--End Request to log in-->
+
+
 <!-- Begin Form to Connect To Nest-->
-<a href="https://home.nest.com/login/oauth2?client_id=5b67590a-8ce8-43f2-bad1-f35e8c6ba3cb&state=STATE" target="_blank">Generate Authorization Code for My NEST</a> <br />
+<div id="nest_linking_section" class="text-left">
+<strong>Greetings, O chosen one! The holy grail that you seek is below.</strong> <br />
 
-<form name="user_nest_authCode_form" action="javascript:linkNESTDevice();" method="post" class="form-horizontal" role="form">
-<strong></strong>
-<!-- <input type="text" name="user_nest_authCode" required /> <br /> -->
-<div class="form-group">
-    <label for="nest_authCode_request" class="col-sm-4 control-label">Please Enter your NEST Authorization Code Here</label>
-    <div class="col-sm-4">
-      <input type="text" class="form-control" id="user_nest_authCode" placeholder="NEST Authorization Code">
-    </div>
-  </div>
-
-<input type="submit" value="I authorize Emonix.io to reduce my Energy Bill" /> <br />
-</form>
-<br />
+Please follow these instructions to let us access your Nest.<br />
+<ol>
+<li>First, <strong><a href="https://home.nest.com/login/oauth2?client_id=5b67590a-8ce8-43f2-bad1-f35e8c6ba3cb&state=STATE" target="_blank">Generate a PIN code for your Nest</a> </strong></li>
+<li>Agree to let emonix.io access your Nest (you know you want to!) </li>
+<li>Login with your Nest account to view your Nest PIN code </li>
+<li>Select and copy that PIN code and paste in in the corresponding text box below </li>
+</ol>
+	<form name="user_nest_authCode_form" action="javascript:linkNESTDevice();" method="post" class="form-horizontal" role="form">
+	<div class="form-group">
+		<label for="nest_authCode_request" class="col-sm-4 control-label">Please Enter your Nest PIN Code Here</label>
+	    <div class="col-sm-4">
+	    	<input type="text" class="form-control" id="user_nest_authCode" placeholder="NEST Authorization Code">
+	    </div>
+	</div>
+	
+	<input type="submit" value="I authorize Emonix.io to reduce my Energy Bill" /> <br />
+	</form>
+	<br />
+</div>
 <!-- End Form to Connect To Nest-->
 
-<!-- Begin Horiz Form -->
-
-<form id="billform" class="form-horizontal" role="form">
-<!-- Start Date -->
-<div class="form-group">
-    <label for="startdate" class="col-sm-4 control-label">billing cycle start date</label>
-    <div class="col-sm-4">
-      <input type="date" class="form-control" id="startdate" placeholder="start date">
-    </div>
-  </div>
-
-<!-- End Date -->
-<div class="form-group">
-    <label for="enddate" class="col-sm-4 control-label">billing cycle end date</label>
-    <div class="col-sm-4">
-      <input type="date" class="form-control" id="enddate" placeholder="end date">
-    </div>
-  </div>
-
-<!-- Gas Amount -->
-     <div class="form-group">
-           <div class="col-sm-4 text-right">
-             <label for="gasused" class="">gas used last month</label>
-           </div>
-           <div class="col-sm-2">
-             <input id="gasused" class="form-control input-group-lg reg_name" type="text" name="gas used" placeholder="gas used" onkeyup="computeBill()">
-           </div>       
-           <div class="col-sm-2">
-             <label for="lastname" class="sr-only"></label>
-      <select class="form-control input-group-lg reg_name">
-        <option>therms</option>
-        <option>btu</option>
-      </select>
-           </div>
-    </div><!--/form-group-->
-
-<!-- Gas Price -->
-<div class="form-group">
-    <label for="gasprice" class="col-sm-4 control-label">gas price (per therm/btu)</label>
-    <div class="col-sm-4">
-      <div class="input-group">
-      <div class="input-group-addon">$</div>
-      <input type="text" class="form-control" id="gasprice" placeholder="gas price" onkeyup="computeBill()">
-      </div>
-    </div>
-  </div>
-
-<!-- Distribution Charges -->
-     <div class="form-group">
-           <div class="col-sm-4 text-right">
-             <label for="distrocharge" class="">distribution charges</label>
-           </div>
-           <div class="col-sm-2">
-           <div class="input-group">
-           <div class="input-group-addon">$</div>
-             <input id="distrocharge" class="form-control input-group-lg reg_name" type="text" placeholder="daily charge" onkeyup="computeBill()">
-           </div>
-           </div>       
-           <div class="col-sm-2">
-             <label for="lastname" class="sr-only"></label>
-      <select class="form-control input-group-lg reg_name">
-        <option>per day</option>
-        <option>per month</option>
-      </select>
-           </div>
-    </div><!--/form-group-->
-
-<div class="form-group">
-    <label for="computedGasBill" class="col-sm-4 control-label">total heating bill</label>
-    <div class="col-sm-4">
-      <input type="text" class="form-control" id="computedGasBill" placeholder="end date">
-    </div>
-  </div>
-
-
-
-  <div class="form-group"> 
-    <div class="col-sm-offset-2 col-sm-8">
-      <button type="submit" class="btn btn-default">Go!</button>
-    </div>
-  </div>
-</form>
-
-<!-- End Form -->
+<!-- Begin Bill Analysis Section -->
+<div id="bill_analysis_section">
+	<h4>Woohoo! Looks like we're already pals with your NEST. Please tell us about your last heating bill</h4>
+	<form id="billform" class="form-horizontal" role="form">
+	<!-- Start Date -->
+	<div class="form-group">
+	    <label for="startdate" class="col-sm-4 control-label">billing cycle start date</label>
+	    <div class="col-sm-4">
+	      <input type="date" class="form-control" id="startdate" placeholder="start date">
+	    </div>
+	  </div>
+	
+	<!-- End Date -->
+	<div class="form-group">
+	    <label for="enddate" class="col-sm-4 control-label">billing cycle end date</label>
+	    <div class="col-sm-4">
+	      <input type="date" class="form-control" id="enddate" placeholder="end date">
+	    </div>
+	  </div>
+	
+	<!-- Gas Amount -->
+	     <div class="form-group">
+	           <div class="col-sm-4 text-right">
+	             <label for="gasused" class="">gas used last month</label>
+	           </div>
+	           <div class="col-sm-2">
+	             <input id="gasused" class="form-control input-group-lg reg_name" type="text" name="gas used" placeholder="gas used" onkeyup="computeBill()">
+	           </div>       
+	           <div class="col-sm-2">
+	             <label for="lastname" class="sr-only"></label>
+	      <select class="form-control input-group-lg reg_name">
+	        <option>therms</option>
+	        <option>btu</option>
+	      </select>
+	           </div>
+	    </div><!--/form-group-->
+	
+	<!-- Gas Price -->
+	<div class="form-group">
+	    <label for="gasprice" class="col-sm-4 control-label">gas price (per therm/btu)</label>
+	    <div class="col-sm-4">
+	      <div class="input-group">
+	      <div class="input-group-addon">$</div>
+	      <input type="text" class="form-control" id="gasprice" placeholder="gas price" onkeyup="computeBill()">
+	      </div>
+	    </div>
+	  </div>
+	
+	<!-- Distribution Charges -->
+	     <div class="form-group">
+	           <div class="col-sm-4 text-right">
+	             <label for="distrocharge" class="">distribution charges</label>
+	           </div>
+	           <div class="col-sm-2">
+	           <div class="input-group">
+	           <div class="input-group-addon">$</div>
+	             <input id="distrocharge" class="form-control input-group-lg reg_name" type="text" placeholder="daily charge" onkeyup="computeBill()">
+	           </div>
+	           </div>       
+	           <div class="col-sm-2">
+	             <label for="lastname" class="sr-only"></label>
+	      <select class="form-control input-group-lg reg_name">
+	        <option>per day</option>
+	        <option>per month</option>
+	      </select>
+	           </div>
+	    </div><!--/form-group-->
+	
+	<div class="form-group">
+	    <label for="computedGasBill" class="col-sm-4 control-label">total heating bill</label>
+	    <div class="col-sm-4">
+	      <input type="text" class="form-control" id="computedGasBill" placeholder="end date">
+	    </div>
+	  </div>
+	
+	
+	
+	  <div class="form-group"> 
+	    <div class="col-sm-offset-2 col-sm-8">
+	      <button type="submit" class="btn btn-default">Go!</button>
+	    </div>
+	  </div>
+	</form>
+</div>
+<!-- End Bill Analysis Section -->
 
 		<div class="row">
 			<div class="col-lg-2 col-lg-offset-5">
@@ -540,6 +628,7 @@ if (window.addEventListener) {
 		</div>
 		<div class="container">
 
+<div class="fb-share-button" data-href="http://www.emonix.io" data-layout="button"></div>
 		<div class="row">
 			<div class="col-lg-2 col-lg-offset-5">
 				<hr class="marginbot-50">
@@ -548,7 +637,7 @@ if (window.addEventListener) {
     <div class="row">
         <div class="col-lg-8">
             <div class="boxed-grey">
-                <form id="contact-form" method="POST" >
+                <form id="contact-form" method="POST" action="cgi-bin/getintouch.cgi">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -584,7 +673,7 @@ if (window.addEventListener) {
                         </div>
                     </div>
                     <div class="col-md-12">
-                        <button type="submit" class="btn btn-skin pull-right" id="btnContactUs" onclick="sendEmail()">
+                        <button type="submit" class="btn btn-skin pull-right" id="btnContactUs">
                             Send Message</button>
                     </div>
                 </div>
@@ -604,7 +693,7 @@ if (window.addEventListener) {
 
 				<address>
 				  <strong>Email</strong><br>
-				  <a href="mailto:#">info@emonix.io</a>
+				  <a href="mailto:info@emonix.io">info@emonix.io</a>
 				</address>	
 				<address>
 				  <strong>We're on social networks</strong><br>
